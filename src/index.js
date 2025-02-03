@@ -8,14 +8,18 @@
 import express from "express";
 import axios from "axios";
 import dotenv from "dotenv";
-
+import cors from "cors";
+import * as functions from "firebase-functions";
 // Load environment variables from .env file
 dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
-const { WEBHOOK_VERIFY_TOKEN, GRAPH_API_TOKEN, PORT } = process.env;
+const { WEBHOOK_VERIFY_TOKEN, GRAPH_API_TOKEN } = process.env;
+
+const port = 3000;
 
 app.post("/webhook", async (req, res) => {
   // log incoming messages
@@ -34,7 +38,7 @@ app.post("/webhook", async (req, res) => {
     // send a reply message as per the docs here https://developers.facebook.com/docs/whatsapp/cloud-api/reference/messages
     await axios({
       method: "POST",
-      url: `https://graph.facebook.com/v18.0/${business_phone_number_id}/messages`,
+      url: `https://graph.facebook.com/v22.0/${business_phone_number_id}/messages`,
       headers: {
         Authorization: `Bearer ${GRAPH_API_TOKEN}`,
       },
@@ -85,10 +89,12 @@ app.get("/webhook", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.send(`<pre>Nothing to see here.
-Checkout README.md to start.</pre>`);
+  res.send(`<pre>Nothing to see here!</pre>`);
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is listening on port: ${PORT}`);
+app.listen(port, () => {
+  console.log(`Server is listening on port: ${port}`);
 });
+
+
+export const api = functions.https.onRequest(app);
